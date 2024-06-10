@@ -29,5 +29,6 @@ go.work.sum
 .env
 
 # Project build
-./build
 bin
+.ssh
+tmp
