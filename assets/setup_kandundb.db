@@ -1,0 +1,67 @@
+-- Crear la base de datos kandundb si no existe
+CREATE DATABASE kandundb;
+
+-- Conectarse a la base de datos kandundb
+\c kandundb
+
+ALTER DATABASE kandundb OWNER TO postgres;
+
+-- Crear la tabla task_status si no existe
+CREATE TABLE IF NOT EXISTS task_status (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Crear la tabla project si no existe
+CREATE TABLE IF NOT EXISTS project (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+-- Crear la tabla task si no existe
+CREATE TABLE IF NOT EXISTS task (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(15) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP,
+    task_status_id INTEGER NOT NULL,
+    project_id INTEGER,
+    CONSTRAINT fk_task_status
+        FOREIGN KEY(task_status_id) 
+	    REFERENCES task_status(id),
+    CONSTRAINT fk_project
+        FOREIGN KEY(project_id) 
+	    REFERENCES project(id),
+    CONSTRAINT ck_end_time 
+        CHECK (end_time > created_at)
+);
+
+-- Crear índices para mejorar el rendimiento si no existen
+CREATE INDEX IF NOT EXISTS idx_task_task_status_id ON task (task_status_id);
+CREATE INDEX IF NOT EXISTS idx_task_project_id ON task (project_id);
+
+INSERT INTO task_status (id, name) VALUES 
+(0, 'TODO'),
+(1, 'IN_PROGRESS'),
+(2, 'DONE')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO project (id, name, description) VALUES 
+(0, 'Sample Project', 'Sample project, for testing purpose only')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO task (id, code, name, description, task_status_id, project_id) VALUES
+(0, 'SP-0001', 'Sample Task 1', 'Sample description task 1', 0, 0),
+(1, 'SP-0002', 'Sample Task 2', 'Lorem ipsum', 0, 0),
+(2, 'SP-0003', 'Sample Task 3', 'Lorem ipsum', 0, 0),
+(3, 'SP-0003', 'In progress Task', 'Lorem ipsum', 1, 0),
+(4, 'SP-0003', 'Done Sample Task', 'Lorem ipsum', 2, 0)
+ON CONFLICT (id) DO NOTHING;
+
+
+
