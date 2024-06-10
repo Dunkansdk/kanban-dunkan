@@ -1,9 +1,11 @@
 BINARY_NAME=kanban-dunkan
-GOFLAGS = -ldflags="-s -w"
+VERSION=$(shell git describe --tags --always --long --dirty)
+GOFLAGS = -ldflags="-s -w -X main.version=$(VERSION)"
 
-clean: 
-	go clean
-	rm -rf ./bin
+all: build
+
+dep:
+	go mod download
 
 build: clean
 # SSH Main
@@ -18,24 +20,31 @@ build: clean
 	# GOARCH=amd64 GOOS=darwin go build $(GOFLAGS) -o ./bin/${BINARY_NAME}-win-darwin cmd/kb_win/main.go # not supported
 	GOARCH=amd64 GOOS=linux go build $(GOFLAGS) -o ./bin/${BINARY_NAME}-win-linux cmd/kb_win/main.go
 	GOARCH=amd64 GOOS=windows go build $(GOFLAGS) -o ./bin/${BINARY_NAME}-win-windows.exe cmd/kb_win/main.go
+	@echo version: $(VERSION)
 
 run: build 
 	./bin/${BINARY_NAME}-term-linux
 
-# test:
-#  go test ./...
+clean: 
+	go clean
+	rm -rf ./bin
 
-# test_coverage:
-#  go test ./... -coverprofile=coverage.out
+# Live Reload
+watch:
+	@if command -v air > /dev/null; then \
+	    air; \
+	    echo "Watching...";\
+	else \
+	    read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+	    if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+	        go install github.com/air-verse/air@latest; \
+			export GOROOT=$GOPATH; \
+	        air; \
+	        echo "Watching...";\
+	    else \
+	        echo "You chose not to install air. Exiting..."; \
+	        exit 1; \
+	    fi; \
+	fi
 
-dep:
-	go mod download
-
-assets:
-	cp ./assets ./bin/
-
-vet:
-	go vet
-
-lint:
-	golangci-lint run --enable-all
+.PHONY: all build run clean
