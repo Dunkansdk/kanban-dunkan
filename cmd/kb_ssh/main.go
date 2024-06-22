@@ -41,9 +41,8 @@ func teaHandler(sess ssh.Session) (tea.Model, []tea.ProgramOption) {
 		return nil, nil
 	}
 
-	renderer := bm.MakeRenderer(sess)
 	lipgloss.SetColorProfile(termenv.TrueColor)
-	model := board.NewWithRenderer(renderer)
+	model := board.NewKanban()
 	return model, []tea.ProgramOption{tea.WithAltScreen()}
 }
 

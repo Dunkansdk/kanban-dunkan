@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	model := board.New()
+	model := board.NewKanban()
 
 	// Load fonts for normal, bold and italic text styles.
 	fonts, err := crt.LoadFaces("./assets/fonts/IosevkaTermNerdFontMono-Regular.ttf", "./assets/fonts/IosevkaTermNerdFontMono-Bold.ttf", "./assets/fonts/IosevkaTermNerdFontMono-Italic.ttf", crt.GetFontDPI(), 14.0)

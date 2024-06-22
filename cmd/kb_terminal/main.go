@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	model := board.New()
+	model := board.NewKanban()
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

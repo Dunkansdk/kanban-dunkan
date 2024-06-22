@@ -71,7 +71,7 @@ func createTeaForJS(model tea.Model, option ...tea.ProgramOption) *tea.Program {
 }
 
 func main() {
-	model := board.New()
+	model := board.NewKanban()
 	prog := createTeaForJS(model, tea.WithAltScreen())
 
 	fmt.Println("Starting program...")
