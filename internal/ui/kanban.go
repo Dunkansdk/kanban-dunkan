@@ -2,87 +2,55 @@ package ui
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/keyboard"
-	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 type Kanban struct {
-	loaded   bool
-	columns  []components.Column
-	quitting bool
-	help     help.Model
+	components.Common
+	loaded       bool
+	columns      []components.Column
+	quitting     bool
+	help         help.Model
+	activeColumn *components.Column
+	motion       bool
 }
+
+var activeId int
 
 func NewKanban() *Kanban {
 	help := help.New()
 	help.ShowAll = false
-	return &Kanban{help: help}
-}
-
-func (kanban *Kanban) RetreiveTasks(width, height int) {
-	// TODO: I should divide this by project.
-	taskRepository := task.NewTaskRepository()
-	statuses := taskRepository.GetAllStatuses()
-
-	kanban.columns = make([]components.Column, len(statuses))
-
-	for index, value := range statuses {
-		tasks, _ := taskRepository.GetAllByStatus(value)
-		kanban.columns[value.ID].FillColumn(value, tasks)
-		kanban.columns[value.ID].SetSize(width, height)
-		if index == 0 {
-			kanban.columns[value.ID].Focus()
-		}
-	}
+	kanban := Kanban{motion: true, help: help}
+	kanban.ID = zone.NewPrefix()
+	return &kanban
 }
 
 func (kanban Kanban) Init() tea.Cmd {
 	return nil
 }
 
-func (kanban *Kanban) Active() (*components.Column, int) {
-	for index, column := range kanban.columns {
-		if column.Focused() {
-			return &column, index
-		}
-	}
-	return nil, 0
-}
-
-func (kanban *Kanban) Next() {
-	_, id := kanban.Active()
-	if id < len(kanban.columns)-1 {
-		kanban.columns[id].Blur()
-		kanban.columns[id+1].Focus()
-	}
-}
-
-func (kanban *Kanban) Prev() {
-	_, id := kanban.Active()
-	if id > 0 {
-		kanban.columns[id].Blur()
-		kanban.columns[id-1].Focus()
-	}
-}
-
 func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
+	kanban.activeColumn, activeId = kanban.Active()
+
+	var cmds []tea.Cmd
+
 	switch message := message.(type) {
 	case tea.WindowSizeMsg:
-		var cmds []tea.Cmd
-		kanban.help.Width = message.Width - 4
+
 		if !kanban.loaded {
 			kanban.RetreiveTasks(message.Width, message.Height)
+			kanban.loaded = true
 		}
 		for index, column := range kanban.columns {
 			model, cmd := column.Update(message)
 			kanban.columns[index] = model.(components.Column)
 			cmds = append(cmds, cmd)
 		}
-		kanban.loaded = true
 		return kanban, tea.Batch(cmds...)
 
 	case tea.KeyMsg:
@@ -94,13 +62,47 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			kanban.Prev()
 		case key.Matches(message, keyboard.Options.Right):
 			kanban.Next()
+		case key.Matches(message, keyboard.Options.Down):
+			kanban.columns[activeId].List.CursorDown()
+		case key.Matches(message, keyboard.Options.Up):
+			kanban.columns[activeId].List.CursorUp()
 		case key.Matches(message, keyboard.Options.Help):
 			kanban.help.ShowAll = !kanban.help.ShowAll
+
+		// TODO: Delete this and do a config options screen
+		case key.Matches(message, keyboard.Options.Motion):
+			if kanban.motion {
+				cmds = append(cmds, tea.DisableMouse)
+				kanban.motion = false
+			} else {
+				cmds = append(cmds, tea.EnableMouseAllMotion)
+				kanban.motion = true
+			}
+			return kanban, tea.Batch(cmds...)
+		}
+
+	case tea.MouseMsg:
+		if kanban.motion {
+			switch message.Button {
+			case tea.MouseButtonWheelUp:
+				kanban.columns[activeId].List.CursorUp()
+				return kanban, nil
+
+			case tea.MouseButtonWheelDown:
+				kanban.columns[activeId].List.CursorDown()
+				return kanban, nil
+			}
+			if message.Action == tea.MouseActionPress || message.Button == tea.MouseButtonLeft {
+				kanban.ZoneSelectLine(message)
+
+			}
+			if message.Action == tea.MouseActionMotion {
+				kanban.ZoneSelectColumn(message)
+			}
 		}
 	}
 
-	_, activeId := kanban.Active()
-	model, cmd := kanban.columns[activeId].Update(message)
+	model, cmd := kanban.activeColumn.Update(message)
 	if _, ok := model.(components.Column); ok {
 		kanban.columns[activeId] = model.(components.Column)
 	} else {
@@ -124,7 +126,7 @@ func (kanban Kanban) View() string {
 			c_styles...,
 		)
 
-		return lipgloss.JoinVertical(lipgloss.Left, kanbanStyle, kanban.help.View(keyboard.Options))
+		return zone.Scan(lipgloss.JoinVertical(lipgloss.Left, kanbanStyle, kanban.help.View(keyboard.Options)))
 	} else {
 		return "Loading\n"
 	}

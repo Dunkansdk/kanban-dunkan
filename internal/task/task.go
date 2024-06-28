@@ -1,5 +1,7 @@
 package task
 
+import zone "github.com/lrstanley/bubblezone"
+
 type TaskStatus struct {
 	ID   int
 	Name string
@@ -15,17 +17,17 @@ type Task struct {
 
 // Method mandatory in bubbletea.
 func (t Task) FilterValue() string {
-	return t.Name
+	return zone.Mark(t.Code+t.Name, t.Name)
 }
 
 func (t Task) Title() string {
-	return t.Name
+	return zone.Mark(t.Code+t.Name, t.Name)
 }
 
 func (t Task) Description() string {
 	if len(t.Content) > 50 {
-		return t.Content[0:50]
+		return zone.Mark(t.Code+t.Content[0:50], t.Content[0:50])
 	} else {
-		return t.Content
+		return zone.Mark(t.Code+t.Content, t.Content)
 	}
 }

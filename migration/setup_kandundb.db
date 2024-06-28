@@ -56,11 +56,27 @@ INSERT INTO project (id, name, description) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO task (id, code, name, description, task_status_id, project_id) VALUES
-(0, 'SP-0001', 'Sample Task 1', 'Sample description task 1', 0, 0),
-(1, 'SP-0002', 'Sample Task 2', 'Lorem ipsum', 0, 0),
-(2, 'SP-0003', 'Sample Task 3', 'Lorem ipsum', 0, 0),
-(3, 'SP-0003', 'In progress Task', 'Lorem ipsum', 1, 0),
-(4, 'SP-0003', 'Done Sample Task', 'Lorem ipsum', 2, 0)
+(0, 'TK-0011', 'Plan Product Launch', 'Develop a detailed plan for the new product launch', 0, 0),
+(1, 'TK-0012', 'Design Marketing Campaign', 'Create and design an effective marketing campaign to attract new customers', 1, 0),
+(2, 'TK-0013', 'Conduct Market Analysis', 'Research and analyze current market trends and competitors', 0, 0),
+(3, 'TK-0014', 'Develop Prototype', 'Create a functional prototype of the new technological device', 0, 0),
+(4, 'TK-0015', 'Write Research Article', 'Draft a detailed article on recent findings in the field of biotechnology', 1, 0),
+(5, 'TK-0016', 'Organize International Conference', 'Plan and coordinate all aspects of an international conference on artificial intelligence', 2, 0),
+(6, 'TK-0017', 'Review Source Code', 'Conduct a thorough review of the project''s source code', 0, 0),
+(7, 'TK-0018', 'Lead Brainstorming Session', 'Conduct a brainstorming session to generate innovative ideas for the new project', 1, 0),
+(8, 'TK-0019', 'Prepare Investor Presentation', 'Create and rehearse an engaging presentation for potential project investors', 0, 0),
+(9, 'TK-0020', 'Implement SEO Strategies', 'Optimize website content to improve search engine rankings', 0, 0),
+(10, 'TK-0021', 'Develop Mobile App', 'Design and develop a new mobile application for e-commerce', 1, 0),
+(11, 'TK-0022', 'Conduct User Testing', 'Perform user testing to gather feedback on the new software', 2, 0),
+(12, 'TK-0023', 'Optimize Database Performance', 'Improve the performance of the database for faster query response times', 0, 0),
+(13, 'TK-0024', 'Create Content Strategy', 'Develop a comprehensive content strategy for the upcoming quarter', 1, 0),
+(14, 'TK-0025', 'Manage Social Media Accounts', 'Oversee the daily operations and content posting for all social media accounts', 2, 0),
+(15, 'TK-0026', 'Research Emerging Technologies', 'Investigate new and emerging technologies that could benefit the company', 0, 0),
+(16, 'TK-0027', 'Update Website Design', 'Redesign the company website to improve user experience and visual appeal', 0, 0),
+(17, 'TK-0028', 'Train New Employees', 'Conduct training sessions for newly hired employees', 2, 0),
+(18, 'TK-0029', 'Analyze Sales Data', 'Examine and interpret sales data to identify trends and insights', 0, 0),
+(19, 'TK-0030', 'Develop Customer Loyalty Program', 'Create a program to reward loyal customers and encourage repeat business', 1, 0),
+(20, 'TK-0031', 'Small Content', 'Small Content', 0, 0)
 ON CONFLICT (id) DO NOTHING;
 
 

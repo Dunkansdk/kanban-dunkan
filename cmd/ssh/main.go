@@ -19,6 +19,7 @@ import (
 	"github.com/charmbracelet/wish/activeterm"
 	bm "github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
+	zone "github.com/lrstanley/bubblezone"
 	"github.com/muesli/termenv"
 	"github.com/spf13/pflag"
 )
@@ -42,8 +43,12 @@ func teaHandler(sess ssh.Session) (tea.Model, []tea.ProgramOption) {
 	}
 
 	lipgloss.SetColorProfile(termenv.TrueColor)
+	zone.NewGlobal()
 	model := board.NewKanban()
-	return model, []tea.ProgramOption{tea.WithAltScreen()}
+	return model, []tea.ProgramOption{
+		tea.WithMouseAllMotion(),
+		tea.WithAltScreen(),
+	}
 }
 
 func run(host string, port string) {

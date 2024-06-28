@@ -5,14 +5,14 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 type Column struct {
+	Common
 	focus  bool
 	Status task.TaskStatus
 	List   list.Model
-	Height int
-	Width  int
 }
 
 const DIVISOR_OFFSET = 4
@@ -24,6 +24,8 @@ func (column *Column) FillColumn(status task.TaskStatus, tasks []task.Task) {
 	column.List.Styles.Title = lipgloss.NewStyle().
 		Background(lipgloss.Color("130")).
 		Padding(0, 1)
+
+	column.ID = zone.NewPrefix()
 
 	var task_list []list.Item
 	for _, element := range tasks {
@@ -43,12 +45,14 @@ func (column Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		column.SetSize(msg.Width, msg.Height)
-		column.List.SetSize(msg.Width/DIVISOR_OFFSET, msg.Height-10)
+		column.List.SetSize(msg.Width/DIVISOR_OFFSET, msg.Height/2)
 
 	case tea.KeyMsg:
 		if column.List.FilterState() == list.Filtering {
 			break
 		}
+
+		return column, nil
 	}
 
 	column.List, cmd = column.List.Update(msg)
@@ -56,7 +60,7 @@ func (column Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (column Column) View() string {
-	return column.getStyle().Render(column.List.View())
+	return zone.Mark(column.ID+column.Status.Name, column.getStyle().Render(column.List.View()))
 }
 
 func (column *Column) Blur() {

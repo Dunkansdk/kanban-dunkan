@@ -8,9 +8,11 @@ import (
 	bubbleadapter "github.com/BigJk/crt/bubbletea"
 	board "github.com/Dunkansdk/kanban-dunkan/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 func main() {
+	zone.NewGlobal()
 	model := board.NewKanban()
 
 	// Load fonts for normal, bold and italic text styles.
@@ -20,7 +22,7 @@ func main() {
 	}
 
 	// Just pass your tea.Model to the bubbleadapter, and it will render it to the terminal.
-	win, _, err := bubbleadapter.Window(900, 600, fonts, model, color.Black, tea.WithAltScreen())
+	win, _, err := bubbleadapter.Window(1000, 600, fonts, model, color.Black, tea.WithAltScreen(), tea.WithMouseAllMotion())
 	if err != nil {
 		panic(err)
 	}
