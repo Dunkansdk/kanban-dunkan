@@ -18,14 +18,8 @@ func (kanban *Kanban) ZoneSelectColumn(message tea.MouseMsg) {
 func (kanban *Kanban) ZoneSelectLine(message tea.MouseMsg) {
 	for i, listItem := range kanban.activeColumn.List.VisibleItems() {
 		item, _ := listItem.(task.Task)
-		if len(item.Content) > 50 {
-			if zone.Get(item.Code+item.Name).InBounds(message) || zone.Get(item.Code+item.Content[0:50]).InBounds(message) {
-				kanban.activeColumn.List.Select(i)
-			}
-		} else {
-			if zone.Get(item.Code+item.Name).InBounds(message) || zone.Get(item.Code+item.Content).InBounds(message) {
-				kanban.activeColumn.List.Select(i)
-			}
+		if zone.Get(item.Code+item.Name).InBounds(message) || zone.Get(item.Code).InBounds(message) {
+			kanban.activeColumn.List.Select(i)
 		}
 	}
 }

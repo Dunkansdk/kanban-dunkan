@@ -25,9 +25,5 @@ func (t Task) Title() string {
 }
 
 func (t Task) Description() string {
-	if len(t.Content) > 50 {
-		return zone.Mark(t.Code+t.Content[0:50], t.Content[0:50])
-	} else {
-		return zone.Mark(t.Code+t.Content, t.Content)
-	}
+	return zone.Mark(t.Code, t.Code)
 }

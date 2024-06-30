@@ -44,7 +44,7 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 
 		if !kanban.loaded {
 			kanban.RetreiveTasks(message.Width, message.Height)
-			kanban.loaded = true
+			kanban.loaded = zone.Enabled()
 		}
 		for index, column := range kanban.columns {
 			model, cmd := column.Update(message)
@@ -54,31 +54,27 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return kanban, tea.Batch(cmds...)
 
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(message, keyboard.Options.Quit):
-			kanban.quitting = true
-			return kanban, tea.Quit
-		case key.Matches(message, keyboard.Options.Left):
-			kanban.Prev()
-		case key.Matches(message, keyboard.Options.Right):
-			kanban.Next()
-		case key.Matches(message, keyboard.Options.Down):
-			kanban.columns[activeId].List.CursorDown()
-		case key.Matches(message, keyboard.Options.Up):
-			kanban.columns[activeId].List.CursorUp()
-		case key.Matches(message, keyboard.Options.Help):
-			kanban.help.ShowAll = !kanban.help.ShowAll
-
-		// TODO: Delete this and do a config options screen
-		case key.Matches(message, keyboard.Options.Motion):
-			if kanban.motion {
-				cmds = append(cmds, tea.DisableMouse)
-				kanban.motion = false
-			} else {
-				cmds = append(cmds, tea.EnableMouseAllMotion)
-				kanban.motion = true
+		if !kanban.activeColumn.List.SettingFilter() {
+			switch {
+			case key.Matches(message, keyboard.Options.Quit):
+				kanban.quitting = true
+				return kanban, tea.Quit
+			case key.Matches(message, keyboard.Options.Left):
+				kanban.Prev()
+			case key.Matches(message, keyboard.Options.Right):
+				kanban.Next()
+			case key.Matches(message, keyboard.Options.Help):
+				kanban.help.ShowAll = !kanban.help.ShowAll
+			case key.Matches(message, keyboard.Options.Motion):
+				if kanban.motion {
+					cmds = append(cmds, tea.DisableMouse)
+					kanban.motion = false
+				} else {
+					cmds = append(cmds, tea.EnableMouseAllMotion)
+					kanban.motion = true
+				}
+				return kanban, tea.Batch(cmds...)
 			}
-			return kanban, tea.Batch(cmds...)
 		}
 
 	case tea.MouseMsg:
@@ -96,7 +92,7 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 				kanban.ZoneSelectLine(message)
 
 			}
-			if message.Action == tea.MouseActionMotion {
+			if message.Action == tea.MouseActionMotion && !kanban.activeColumn.List.SettingFilter() {
 				kanban.ZoneSelectColumn(message)
 			}
 		}
