@@ -1,7 +1,8 @@
 package components
 
+import tea "github.com/charmbracelet/bubbletea"
+
 type Common struct {
-	ID     string
-	Height int
-	Width  int
+	ID   string
+	size tea.WindowSizeMsg
 }

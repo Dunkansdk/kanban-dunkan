@@ -1,8 +1,9 @@
-package ui
+package views
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (kanban *Kanban) Active() (*components.Column, int) {
@@ -14,7 +15,7 @@ func (kanban *Kanban) Active() (*components.Column, int) {
 	return nil, 0
 }
 
-func (kanban *Kanban) RetreiveTasks(width, height int) {
+func (kanban *Kanban) RetreiveTasks() {
 	taskRepository := task.NewTaskRepository()
 	statuses := taskRepository.GetAllStatuses()
 
@@ -23,10 +24,15 @@ func (kanban *Kanban) RetreiveTasks(width, height int) {
 	for index, value := range statuses {
 		tasks, _ := taskRepository.GetAllByStatus(value)
 		kanban.columns[value.ID].FillColumn(value, tasks)
-		kanban.columns[value.ID].SetSize(width, height)
 		if index == 0 {
 			kanban.columns[value.ID].Focus()
 		}
+	}
+}
+
+func (kanban *Kanban) UpdateSize(size tea.WindowSizeMsg) {
+	for _, column := range kanban.columns {
+		column.SetSize(size.Width, size.Height)
 	}
 }
 

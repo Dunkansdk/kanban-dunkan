@@ -1,4 +1,4 @@
-package ui
+package views
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"

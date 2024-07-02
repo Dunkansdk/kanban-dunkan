@@ -1,7 +1,9 @@
-package ui
+package views
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/keyboard"
+	"github.com/Dunkansdk/kanban-dunkan/internal/task"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -31,6 +33,10 @@ func NewKanban() *Kanban {
 }
 
 func (kanban Kanban) Init() tea.Cmd {
+	if !kanban.loaded {
+		kanban.RetreiveTasks()
+		kanban.loaded = true
+	}
 	return nil
 }
 
@@ -40,12 +46,20 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch message := message.(type) {
-	case tea.WindowSizeMsg:
-
-		if !kanban.loaded {
-			kanban.RetreiveTasks(message.Width, message.Height)
-			kanban.loaded = zone.Enabled()
+	case ui.ModelRestoreMsg:
+		for index, column := range kanban.columns {
+			model, cmd := column.Update(message)
+			kanban.columns[index] = model.(components.Column)
+			cmds = append(cmds, cmd)
 		}
+		return kanban, tea.Batch(cmds...)
+
+	case tea.WindowSizeMsg:
+		if !kanban.loaded {
+			kanban.RetreiveTasks()
+			kanban.loaded = true
+		}
+		kanban.UpdateSize(message)
 		for index, column := range kanban.columns {
 			model, cmd := column.Update(message)
 			kanban.columns[index] = model.(components.Column)
@@ -65,15 +79,8 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 				kanban.Next()
 			case key.Matches(message, keyboard.Options.Help):
 				kanban.help.ShowAll = !kanban.help.ShowAll
-			case key.Matches(message, keyboard.Options.Motion):
-				if kanban.motion {
-					cmds = append(cmds, tea.DisableMouse)
-					kanban.motion = false
-				} else {
-					cmds = append(cmds, tea.EnableMouseAllMotion)
-					kanban.motion = true
-				}
-				return kanban, tea.Batch(cmds...)
+			case key.Matches(message, keyboard.Options.Enter):
+				return kanban, ui.Push(NewPreview(kanban.activeColumn.List.SelectedItem().(task.Task)))
 			}
 		}
 

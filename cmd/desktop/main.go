@@ -6,14 +6,14 @@ import (
 	"github.com/BigJk/crt"
 
 	bubbleadapter "github.com/BigJk/crt/bubbletea"
-	board "github.com/Dunkansdk/kanban-dunkan/internal/ui"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views"
 	tea "github.com/charmbracelet/bubbletea"
 	zone "github.com/lrstanley/bubblezone"
 )
 
 func main() {
 	zone.NewGlobal()
-	model := board.NewKanban()
+	model := views.NewKanban()
 
 	// Load fonts for normal, bold and italic text styles.
 	fonts, err := crt.LoadFaces("./assets/fonts/IosevkaTermNerdFontMono-Regular.ttf", "./assets/fonts/IosevkaTermNerdFontMono-Bold.ttf", "./assets/fonts/IosevkaTermNerdFontMono-Italic.ttf", crt.GetFontDPI(), 14.0)
