@@ -33,6 +33,7 @@ func (column *Column) FillColumn(status task.TaskStatus, tasks []task.Task) {
 		task_list = append(task_list, element)
 	}
 	column.List.SetItems(task_list)
+
 	column.List.KeyMap.NextPage.SetEnabled(false)
 	column.List.KeyMap.PrevPage.SetEnabled(false)
 	column.List.KeyMap.GoToStart.SetEnabled(false)
@@ -49,7 +50,7 @@ func (column Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		column.SetSize(msg.Width, msg.Height)
-		column.List.SetSize(msg.Width/DIVISOR_OFFSET, msg.Height/2)
+		column.List.SetSize(msg.Width/DIVISOR_OFFSET, msg.Height-DIVISOR_OFFSET-1)
 
 	case tea.KeyMsg:
 		if column.List.FilterState() == list.Filtering {
@@ -78,7 +79,7 @@ func (column *Column) Focused() bool {
 }
 
 func (column *Column) SetSize(width int, height int) {
-	column.size.Width = width / DIVISOR_OFFSET
+	column.Size.Width = width / DIVISOR_OFFSET
 }
 
 func (column *Column) getStyle() lipgloss.Style {
@@ -87,12 +88,12 @@ func (column *Column) getStyle() lipgloss.Style {
 			Padding(1, 2).
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("130")).
-			Height(column.size.Height - DIVISOR_OFFSET).
-			Width(column.size.Width)
+			Height(column.Size.Height - DIVISOR_OFFSET).
+			Width(column.Size.Width)
 	}
 	return lipgloss.NewStyle().
 		Padding(1, 2).
 		Border(lipgloss.HiddenBorder()).
-		Height(column.size.Height - DIVISOR_OFFSET).
-		Width(column.size.Width)
+		Height(column.Size.Height - DIVISOR_OFFSET).
+		Width(column.Size.Width)
 }

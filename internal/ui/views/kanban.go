@@ -80,7 +80,7 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(message, keyboard.Options.Help):
 				kanban.help.ShowAll = !kanban.help.ShowAll
 			case key.Matches(message, keyboard.Options.Enter):
-				return kanban, ui.Push(NewPreview(kanban.activeColumn.List.SelectedItem().(task.Task)))
+				return kanban, ui.Push(NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task)))
 			}
 		}
 
@@ -97,7 +97,6 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if message.Action == tea.MouseActionPress || message.Button == tea.MouseButtonLeft {
 				kanban.ZoneSelectLine(message)
-
 			}
 			if message.Action == tea.MouseActionMotion && !kanban.activeColumn.List.SettingFilter() {
 				kanban.ZoneSelectColumn(message)
