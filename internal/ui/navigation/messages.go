@@ -1,4 +1,4 @@
-package ui
+package navigation
 
 import (
 	tea "github.com/charmbracelet/bubbletea"

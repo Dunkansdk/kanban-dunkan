@@ -1,16 +1,17 @@
-package components
+package column
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/delegate"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column/delegate"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
 )
 
-type Column struct {
-	Common
+type Model struct {
+	components.Common
 	focus  bool
 	Status task.TaskStatus
 	List   list.Model
@@ -18,7 +19,7 @@ type Column struct {
 
 const DIVISOR_OFFSET = 4
 
-func (column *Column) FillColumn(status task.TaskStatus, tasks []task.Task) {
+func (column *Model) FillColumn(status task.TaskStatus, tasks []task.Task) {
 	column.ID = zone.NewPrefix()
 
 	column.List = list.New([]list.Item{}, delegate.ListCustomDelegate{}, 0, 0)
@@ -40,11 +41,11 @@ func (column *Column) FillColumn(status task.TaskStatus, tasks []task.Task) {
 	column.List.KeyMap.GoToEnd.SetEnabled(false)
 }
 
-func (column Column) Init() tea.Cmd {
+func (column Model) Init() tea.Cmd {
 	return nil
 }
 
-func (column Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (column Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 
@@ -62,27 +63,27 @@ func (column Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return column, cmd
 }
 
-func (column Column) View() string {
+func (column Model) View() string {
 	return zone.Mark(column.ID+column.Status.Name, column.getStyle().Render(column.List.View()))
 }
 
-func (column *Column) Blur() {
+func (column *Model) Blur() {
 	column.focus = false
 }
 
-func (column *Column) Focus() {
+func (column *Model) Focus() {
 	column.focus = true
 }
 
-func (column *Column) Focused() bool {
+func (column *Model) Focused() bool {
 	return column.focus
 }
 
-func (column *Column) SetSize(width int, height int) {
+func (column *Model) SetSize(width int, height int) {
 	column.Size.Width = width / DIVISOR_OFFSET
 }
 
-func (column *Column) getStyle() lipgloss.Style {
+func (column *Model) getStyle() lipgloss.Style {
 	if column.Focused() {
 		return lipgloss.NewStyle().
 			Padding(1, 2).

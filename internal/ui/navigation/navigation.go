@@ -1,18 +1,22 @@
-package ui
+package navigation
 
 import (
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/footer"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type NavigationStack struct {
 	// zones *zone.Manager
-	stack []tea.Model
-	size  *tea.WindowSizeMsg
+	stack  []tea.Model
+	size   *tea.WindowSizeMsg
+	footer footer.Model
 }
 
 func NewNavigation(root tea.Model) NavigationStack {
 	navigation := NavigationStack{
-		stack: []tea.Model{root},
+		stack:  []tea.Model{root},
+		footer: footer.New("Preview"),
 	}
 	return navigation
 }
@@ -36,12 +40,19 @@ func (navigation NavigationStack) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		navigation.size = &msg
+		navigation.size.Height -= 1
+		navigation.footer.Size = msg
 	}
+	navigation.footer.Update(msg)
 	var cmd tea.Cmd
 	navigation.stack[len(navigation.stack)-1], cmd = navigation.Top().Update(msg)
 	return navigation, cmd
 }
 
 func (navigation NavigationStack) View() string {
-	return navigation.Top().View()
+	return lipgloss.JoinVertical(lipgloss.Left, navigation.Top().View(), navigation.footer.View())
+}
+
+func (navigation NavigationStack) StackSummary() string {
+	return "Kanban -> Testing breadcrumbs"
 }

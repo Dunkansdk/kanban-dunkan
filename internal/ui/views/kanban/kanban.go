@@ -1,10 +1,12 @@
-package views
+package kanban
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/keyboard"
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/preview"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,10 +17,10 @@ import (
 type Kanban struct {
 	components.Common
 	loaded       bool
-	columns      []components.Column
+	columns      []column.Model
 	quitting     bool
 	help         help.Model
-	activeColumn *components.Column
+	activeColumn *column.Model
 	motion       bool
 }
 
@@ -46,10 +48,10 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch message := message.(type) {
-	case ui.ModelRestoreMsg:
-		for index, column := range kanban.columns {
-			model, cmd := column.Update(message)
-			kanban.columns[index] = model.(components.Column)
+	case navigation.ModelRestoreMsg:
+		for index, value := range kanban.columns {
+			model, cmd := value.Update(message)
+			kanban.columns[index] = model.(column.Model)
 			cmds = append(cmds, cmd)
 		}
 		return kanban, tea.Batch(cmds...)
@@ -60,9 +62,9 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			kanban.loaded = true
 		}
 		kanban.UpdateSize(message)
-		for index, column := range kanban.columns {
-			model, cmd := column.Update(message)
-			kanban.columns[index] = model.(components.Column)
+		for index, value := range kanban.columns {
+			model, cmd := value.Update(message)
+			kanban.columns[index] = model.(column.Model)
 			cmds = append(cmds, cmd)
 		}
 		return kanban, tea.Batch(cmds...)
@@ -80,7 +82,7 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(message, keyboard.Options.Help):
 				kanban.help.ShowAll = !kanban.help.ShowAll
 			case key.Matches(message, keyboard.Options.Enter):
-				return kanban, ui.Push(NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task)))
+				return kanban, navigation.Push(preview.NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task)))
 			}
 		}
 
@@ -105,8 +107,8 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	model, cmd := kanban.activeColumn.Update(message)
-	if _, ok := model.(components.Column); ok {
-		kanban.columns[activeId] = model.(components.Column)
+	if _, ok := model.(column.Model); ok {
+		kanban.columns[activeId] = model.(column.Model)
 	} else {
 		return model, cmd
 	}
@@ -128,7 +130,7 @@ func (kanban Kanban) View() string {
 			c_styles...,
 		)
 
-		return zone.Scan(lipgloss.JoinVertical(lipgloss.Left, kanbanStyle, kanban.help.View(keyboard.Options)))
+		return zone.Scan(lipgloss.JoinVertical(lipgloss.Left, kanbanStyle))
 	} else {
 		return "Loading\n"
 	}

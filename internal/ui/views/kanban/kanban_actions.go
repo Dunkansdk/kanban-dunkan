@@ -1,12 +1,12 @@
-package views
+package kanban
 
 import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (kanban *Kanban) Active() (*components.Column, int) {
+func (kanban *Kanban) Active() (*column.Model, int) {
 	for index, column := range kanban.columns {
 		if column.Focused() {
 			return &kanban.columns[index], index
@@ -19,7 +19,7 @@ func (kanban *Kanban) RetreiveTasks() {
 	taskRepository := task.NewTaskRepository()
 	statuses := taskRepository.GetAllStatuses()
 
-	kanban.columns = make([]components.Column, len(statuses))
+	kanban.columns = make([]column.Model, len(statuses))
 
 	for index, value := range statuses {
 		tasks, _ := taskRepository.GetAllByStatus(value)

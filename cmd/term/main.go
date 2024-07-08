@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/kanban"
 	tea "github.com/charmbracelet/bubbletea"
 	zone "github.com/lrstanley/bubblezone"
 )
@@ -13,8 +13,8 @@ import (
 func main() {
 	zone.NewGlobal()
 
-	model := views.NewKanban()
-	navigation := ui.NewNavigation(model)
+	model := kanban.NewKanban()
+	navigation := navigation.NewNavigation(model)
 
 	p := tea.NewProgram(navigation, tea.WithAltScreen(), tea.WithMouseAllMotion())
 	if _, err := p.Run(); err != nil {

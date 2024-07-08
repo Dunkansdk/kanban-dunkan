@@ -1,10 +1,10 @@
-package views
+package preview
 
 import (
 	"fmt"
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
@@ -12,13 +12,13 @@ import (
 )
 
 type Model struct {
-	column   *components.Column
+	column   *column.Model
 	task     task.Task
 	size     tea.WindowSizeMsg
 	viewport viewport.Model
 }
 
-func NewPreview(column *components.Column, selected task.Task) Model {
+func NewPreview(column *column.Model, selected task.Task) Model {
 	vp := viewport.New(0, 0)
 	vp.Style = lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).

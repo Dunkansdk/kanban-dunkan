@@ -10,7 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/kanban"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -44,8 +45,9 @@ func teaHandler(sess ssh.Session) (tea.Model, []tea.ProgramOption) {
 
 	lipgloss.SetColorProfile(termenv.TrueColor)
 	zone.NewGlobal()
-	model := views.NewKanban()
-	return model, []tea.ProgramOption{
+	model := kanban.NewKanban()
+	navigation := navigation.NewNavigation(model)
+	return navigation, []tea.ProgramOption{
 		tea.WithMouseAllMotion(),
 		tea.WithAltScreen(),
 	}

@@ -10,6 +10,7 @@ import (
 	"syscall/js"
 	"time"
 
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -72,7 +73,8 @@ func createTeaForJS(model tea.Model, option ...tea.ProgramOption) *tea.Program {
 
 func main() {
 	model := views.NewKanban()
-	prog := createTeaForJS(model, tea.WithAltScreen())
+	navigation := navigation.NewNavigation(model)
+	prog := createTeaForJS(navigation, tea.WithAltScreen())
 
 	fmt.Println("Starting program...")
 	if _, err := prog.Run(); err != nil {
