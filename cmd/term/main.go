@@ -14,8 +14,7 @@ func main() {
 	zone.NewGlobal()
 
 	model := kanban.NewKanban()
-	navigation := navigation.NewNavigation(model)
-
+	navigation := navigation.NewNavigation("Board", model)
 	p := tea.NewProgram(navigation, tea.WithAltScreen(), tea.WithMouseAllMotion())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

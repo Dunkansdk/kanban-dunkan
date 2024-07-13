@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/kanban"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -72,8 +72,8 @@ func createTeaForJS(model tea.Model, option ...tea.ProgramOption) *tea.Program {
 }
 
 func main() {
-	model := views.NewKanban()
-	navigation := navigation.NewNavigation(model)
+	model := kanban.NewKanban()
+	navigation := navigation.NewNavigation("Board", modemodel)
 	prog := createTeaForJS(navigation, tea.WithAltScreen())
 
 	fmt.Println("Starting program...")

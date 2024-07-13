@@ -7,27 +7,30 @@ import (
 func (navigation NavigationStack) initRoot() tea.Cmd {
 	cmds := []tea.Cmd{navigation.Top().Init()}
 	if navigation.size != nil {
-		top, cmd := navigation.Top().Update(*navigation.size)
-		navigation.stack[len(navigation.stack)-1] = top
+		model, cmd := navigation.Top().Update(*navigation.size)
+		navigation.stack[len(navigation.stack)-1].Model = model
 		cmds = append(cmds, cmd)
 	}
+	navigation.footer.UpdateContent(navigation.Top().Title, navigation.StackSummary())
 	return tea.Batch(cmds...)
 }
 
-func (navigation NavigationStack) Top() tea.Model {
+func (navigation NavigationStack) Top() NavigationItem {
 	if len(navigation.stack) == 0 {
-		return nil
+		return NavigationItem{}
 	}
 	return navigation.stack[len(navigation.stack)-1]
 }
 
-func (navigation *NavigationStack) Push(model tea.Model) tea.Cmd {
-	navigation.stack = append(navigation.stack, model)
+func (navigation *NavigationStack) Push(item NavigationItem) tea.Cmd {
+	navigation.footer.UpdateContent(navigation.Top().Title, navigation.StackSummary())
+	navigation.stack = append(navigation.stack, item)
 	return navigation.initRoot()
 }
 
-func (navigation *NavigationStack) Replace(model tea.Model) tea.Cmd {
-	navigation.stack[len(navigation.stack)-1] = model
+func (navigation *NavigationStack) Replace(item NavigationItem) tea.Cmd {
+	navigation.footer.UpdateContent(navigation.Top().Title, navigation.StackSummary())
+	navigation.stack[len(navigation.stack)-1] = item
 	return navigation.initRoot()
 }
 
@@ -41,9 +44,10 @@ func (navigation *NavigationStack) Pop() tea.Cmd {
 	}
 	cmds := []tea.Cmd{}
 	var cmd tea.Cmd
-	navigation.stack[len(navigation.stack)-1], cmd = navigation.Top().Update(*navigation.size)
+	navigation.stack[len(navigation.stack)-1].Model, cmd = navigation.Top().Update(*navigation.size)
 	cmds = append(cmds, cmd)
-	navigation.stack[len(navigation.stack)-1], cmd = navigation.Top().Update(ModelRestoreMsg{})
+	navigation.stack[len(navigation.stack)-1].Model, cmd = navigation.Top().Update(ModelRestoreMsg{})
 	cmds = append(cmds, cmd)
+	navigation.footer.UpdateContent(navigation.Top().Title, navigation.StackSummary())
 	return tea.Batch(cmds...)
 }

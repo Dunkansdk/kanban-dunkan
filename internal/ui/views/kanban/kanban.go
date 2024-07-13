@@ -82,7 +82,9 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(message, keyboard.Options.Help):
 				kanban.help.ShowAll = !kanban.help.ShowAll
 			case key.Matches(message, keyboard.Options.Enter):
-				return kanban, navigation.Push(preview.NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task)))
+				view := preview.NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task))
+				return kanban, navigation.Push(navigation.NavigationItem{Title: "Preview", Model: view})
+
 			}
 		}
 

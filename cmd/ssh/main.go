@@ -46,7 +46,7 @@ func teaHandler(sess ssh.Session) (tea.Model, []tea.ProgramOption) {
 	lipgloss.SetColorProfile(termenv.TrueColor)
 	zone.NewGlobal()
 	model := kanban.NewKanban()
-	navigation := navigation.NewNavigation(model)
+	navigation := navigation.NewNavigation("Board", model)
 	return navigation, []tea.ProgramOption{
 		tea.WithMouseAllMotion(),
 		tea.WithAltScreen(),

@@ -15,7 +15,7 @@ import (
 func main() {
 	zone.NewGlobal()
 	model := kanban.NewKanban()
-	navigation := navigation.NewNavigation(model)
+	navigation := navigation.NewNavigation("Board", model)
 
 	// Load fonts for normal, bold and italic text styles.
 	fonts, err := crt.LoadFaces("./assets/fonts/IosevkaTermNerdFontMono-Regular.ttf", "./assets/fonts/IosevkaTermNerdFontMono-Bold.ttf", "./assets/fonts/IosevkaTermNerdFontMono-Italic.ttf", crt.GetFontDPI(), 14.0)

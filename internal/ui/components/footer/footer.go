@@ -15,9 +15,10 @@ const height = 1
 
 type Model struct {
 	components.Common
-	Mode      string
-	UpdatedAt string
-	Styles    FooterStyles
+	Mode       string
+	UpdatedAt  string
+	Breadcrumb string
+	Styles     FooterStyles
 }
 
 // ColorConfig
@@ -34,7 +35,7 @@ type FooterStyles struct {
 }
 
 // New creates a new instance of the UI.
-func New(mode string) Model {
+func New(mode string) *Model {
 	footerStyles := FooterStyles{
 		FirstColumnColors: ColorConfig{
 			Foreground: lipgloss.AdaptiveColor{Dark: "15", Light: "0"},
@@ -55,14 +56,15 @@ func New(mode string) Model {
 	}
 
 	footer := Model{
-		Mode:      mode,
-		UpdatedAt: time.Now().Format(time.RFC822),
-		Styles:    footerStyles,
+		Mode:       mode,
+		UpdatedAt:  time.Now().Format(time.RFC822),
+		Breadcrumb: mode,
+		Styles:     footerStyles,
 	}
 
 	footer.ID = zone.NewPrefix()
 
-	return footer
+	return &footer
 }
 
 // Init intializes the UI.
@@ -118,7 +120,7 @@ func (m Model) View() string {
 		Height(height).
 		Width(m.Size.Width - width(firstColumn) - width(thirdColumn) - width(fourthColumn)).
 		Render(truncate.StringWithTail(
-			"we need a breadcrumb component to put it here, testing the trim",
+			m.Breadcrumb,
 			uint(m.Size.Width-width(firstColumn)-width(thirdColumn)-width(fourthColumn)-3),
 			"..."),
 		)

@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -25,8 +24,8 @@ func New() *sql.DB {
 		return dbInstance
 	}
 
-	// connStr := "postgres://postgres:postgres@localhost:5432/kandundb?sslmode=disable"
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
+	var connStr string
+	connStr = "postgres://postgres:postgres@localhost:5432/kandundb?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 
 	if err != nil {

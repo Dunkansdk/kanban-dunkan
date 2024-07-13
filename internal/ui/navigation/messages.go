@@ -7,10 +7,10 @@ import (
 type ModelRestoreMsg struct{}
 type ModelPopMsg struct{}
 type ModelPushMsg struct {
-	Page tea.Model
+	Item NavigationItem
 }
 type ModelReplaceMsg struct {
-	Page tea.Model
+	Item NavigationItem
 }
 
 func Pop() tea.Cmd {
@@ -19,14 +19,14 @@ func Pop() tea.Cmd {
 	}
 }
 
-func Push(page tea.Model) tea.Cmd {
+func Push(item NavigationItem) tea.Cmd {
 	return func() tea.Msg {
-		return ModelPushMsg{page}
+		return ModelPushMsg{item}
 	}
 }
 
-func Replace(page tea.Model) tea.Cmd {
+func Replace(item NavigationItem) tea.Cmd {
 	return func() tea.Msg {
-		return ModelReplaceMsg{page}
+		return ModelReplaceMsg{item}
 	}
 }
