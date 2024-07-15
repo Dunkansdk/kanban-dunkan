@@ -10,17 +10,19 @@ import (
 	zone "github.com/lrstanley/bubblezone"
 )
 
+const CENTER_FACTOR = 5
+
 type Model struct {
 	components.Common
-	focus  bool
-	Status task.TaskStatus
-	List   list.Model
+	focus   bool
+	Status  task.TaskStatus
+	List    list.Model
+	divisor int
 }
 
-const DIVISOR_OFFSET = 4
-
-func (column *Model) FillColumn(status task.TaskStatus, tasks []task.Task) {
+func (column *Model) FillColumn(status task.TaskStatus, tasks []task.Task, totalColumns int) {
 	column.ID = zone.NewPrefix()
+	column.divisor = totalColumns
 
 	column.List = list.New([]list.Item{}, delegate.ListCustomDelegate{}, 0, 0)
 	column.List.SetShowHelp(false)
@@ -51,7 +53,7 @@ func (column Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		column.SetSize(msg.Width, msg.Height)
-		column.List.SetSize(msg.Width/DIVISOR_OFFSET, msg.Height-DIVISOR_OFFSET-1)
+		column.List.SetSize((msg.Width/column.divisor)-CENTER_FACTOR, msg.Height-CENTER_FACTOR)
 
 	case tea.KeyMsg:
 		if column.List.FilterState() == list.Filtering {
@@ -80,7 +82,7 @@ func (column *Model) Focused() bool {
 }
 
 func (column *Model) SetSize(width int, height int) {
-	column.Size.Width = width / DIVISOR_OFFSET
+	column.Size.Width = (width / column.divisor) - CENTER_FACTOR
 }
 
 func (column *Model) getStyle() lipgloss.Style {
@@ -89,12 +91,12 @@ func (column *Model) getStyle() lipgloss.Style {
 			Padding(1, 2).
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("130")).
-			Height(column.Size.Height - DIVISOR_OFFSET).
+			Height(column.Size.Height - column.divisor).
 			Width(column.Size.Width)
 	}
 	return lipgloss.NewStyle().
 		Padding(1, 2).
 		Border(lipgloss.HiddenBorder()).
-		Height(column.Size.Height - DIVISOR_OFFSET).
+		Height(column.Size.Height - column.divisor).
 		Width(column.Size.Width)
 }

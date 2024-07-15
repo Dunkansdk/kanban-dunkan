@@ -4,21 +4,24 @@ import (
 	"strings"
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/footer"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 type NavigationStack struct {
-	// zones *zone.Manager
-	stack  []NavigationItem
-	size   *tea.WindowSizeMsg
-	footer *footer.Model
+	// zones    *zone.Manager
+	stack    []NavigationItem
+	size     *tea.WindowSizeMsg
+	footer   *footer.Model
+	viewport viewport.Model
 }
 
 func NewNavigation(title string, model tea.Model) NavigationStack {
 	navigation := NavigationStack{
-		stack:  []NavigationItem{NavigationItem{Title: title, Model: model}},
-		footer: footer.New("Preview"),
+		stack:    []NavigationItem{NavigationItem{Title: title, Model: model}},
+		footer:   footer.New("Preview"),
+		viewport: viewport.New(0, 0),
 	}
 	return navigation
 }
@@ -30,6 +33,11 @@ func (navigation NavigationStack) Init() tea.Cmd {
 func (navigation NavigationStack) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	active := navigation.Top()
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		navigation.size = &msg
+		navigation.footer.Size = msg
+		navigation.viewport.Height = msg.Height - footer.Height
+		navigation.viewport.Width = msg.Width
 	case ModelPopMsg:
 		return navigation, navigation.Pop()
 	case ModelPushMsg:
@@ -41,15 +49,25 @@ func (navigation NavigationStack) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			return navigation, navigation.Pop()
 		}
-	case tea.WindowSizeMsg:
-		navigation.size = &msg
-		navigation.size.Height -= 1
-		navigation.footer.Size = msg
 	}
-	navigation.footer.Update(msg)
-	model, cmd := active.Update(msg)
+
+	var cmd tea.Cmd
+	var cmds []tea.Cmd
+
+	// Footer
+	_, cmd = navigation.footer.Update(msg)
+	cmds = append(cmds, cmd)
+
+	// Active Navigation
+	model, activecmd := active.Update(msg)
 	navigation.stack[len(navigation.stack)-1] = model.(NavigationItem)
-	return navigation, cmd
+	cmds = append(cmds, activecmd)
+
+	// Viewport
+	navigation.viewport, cmd = navigation.viewport.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return navigation, tea.Batch(cmds...)
 }
 
 func (navigation NavigationStack) View() string {
@@ -57,7 +75,8 @@ func (navigation NavigationStack) View() string {
 	if top.Model == nil {
 		return ""
 	}
-	return lipgloss.JoinVertical(lipgloss.Left, top.View(), navigation.footer.View())
+	navigation.viewport.SetContent(top.View())
+	return lipgloss.JoinVertical(lipgloss.Left, navigation.viewport.View(), navigation.footer.View())
 }
 
 func (navigation NavigationStack) StackSummary() string {

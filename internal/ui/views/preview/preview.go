@@ -5,6 +5,8 @@ import (
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/edit"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
@@ -38,8 +40,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.size = msg
-		m.viewport.Height = msg.Height - 7
+		m.viewport.Height = msg.Height
 		m.viewport.Width = msg.Width - m.column.Size.Width - 4
+	case tea.KeyMsg:
+		switch (msg).Type {
+		case tea.KeyEnter:
+			view := edit.EditTaskView(m.column.List.SelectedItem().(task.Task))
+			return view, navigation.Push(navigation.NavigationItem{Title: "Edit task", Model: view})
+		}
 	}
 
 	var cmd tea.Cmd

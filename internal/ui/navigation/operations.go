@@ -42,6 +42,7 @@ func (navigation *NavigationStack) Pop() tea.Cmd {
 	if navigation.size == nil {
 		return nil
 	}
+	navigation.footer.UpdateContent(navigation.Top().Title, navigation.StackSummary())
 	cmds := []tea.Cmd{}
 	var cmd tea.Cmd
 	navigation.stack[len(navigation.stack)-1].Model, cmd = navigation.Top().Update(*navigation.size)

@@ -6,6 +6,7 @@ import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/create"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/preview"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -84,7 +85,9 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(message, keyboard.Options.Enter):
 				view := preview.NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task))
 				return kanban, navigation.Push(navigation.NavigationItem{Title: "Preview", Model: view})
-
+			case key.Matches(message, keyboard.Options.New):
+				view := create.CreateTaskView()
+				return kanban, navigation.Push(navigation.NavigationItem{Title: "Create task", Model: view})
 			}
 		}
 
@@ -94,7 +97,6 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.MouseButtonWheelUp:
 				kanban.columns[activeId].List.CursorUp()
 				return kanban, nil
-
 			case tea.MouseButtonWheelDown:
 				kanban.columns[activeId].List.CursorDown()
 				return kanban, nil
@@ -123,16 +125,16 @@ func (kanban Kanban) View() string {
 		return ""
 	}
 	if kanban.loaded {
-		var c_styles []string
+		var components []string
 		for _, column := range kanban.columns {
-			c_styles = append(c_styles, column.View())
+			components = append(components, column.View())
 		}
-		kanbanStyle := lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			c_styles...,
+		kanbanCmd := lipgloss.JoinHorizontal(
+			lipgloss.Center,
+			components...,
 		)
-
-		return zone.Scan(lipgloss.JoinVertical(lipgloss.Left, kanbanStyle))
+		kanbanStyle := lipgloss.NewStyle().PaddingLeft(len(kanban.columns) + 1).Render(kanbanCmd)
+		return zone.Scan(kanbanStyle)
 	} else {
 		return "Loading\n"
 	}

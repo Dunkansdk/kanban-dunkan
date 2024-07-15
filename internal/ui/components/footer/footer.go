@@ -11,7 +11,7 @@ import (
 )
 
 // Height represents the height of the statusbar.
-const height = 1
+const Height = 1
 
 type Model struct {
 	components.Common
@@ -95,7 +95,7 @@ func (m Model) View() string {
 		Foreground(m.Styles.FirstColumnColors.Foreground).
 		Background(m.Styles.FirstColumnColors.Background).
 		Padding(0, 1).
-		Height(height).
+		Height(Height).
 		Render(truncate.StringWithTail(m.Mode, 30, "..."))
 
 	thirdColumn := lipgloss.NewStyle().
@@ -103,21 +103,21 @@ func (m Model) View() string {
 		Background(m.Styles.ThirdColumnColors.Background).
 		Align(lipgloss.Right).
 		Padding(0, 1).
-		Height(height).
+		Height(Height).
 		Render(m.UpdatedAt)
 
 	fourthColumn := lipgloss.NewStyle().
 		Foreground(m.Styles.FourthColumnColors.Foreground).
 		Background(m.Styles.FourthColumnColors.Background).
 		Padding(0, 1).
-		Height(height).
+		Height(Height).
 		Render("KD")
 
 	secondColumn := lipgloss.NewStyle().
 		Foreground(m.Styles.SecondColumnColors.Foreground).
 		Background(m.Styles.SecondColumnColors.Background).
 		Padding(0, 1).
-		Height(height).
+		Height(Height).
 		Width(m.Size.Width - width(firstColumn) - width(thirdColumn) - width(fourthColumn)).
 		Render(truncate.StringWithTail(
 			m.Breadcrumb,

@@ -23,7 +23,7 @@ func (kanban *Kanban) RetreiveTasks() {
 
 	for index, value := range statuses {
 		tasks, _ := taskRepository.GetAllByStatus(value)
-		kanban.columns[value.ID].FillColumn(value, tasks)
+		kanban.columns[value.ID].FillColumn(value, tasks, len(statuses))
 		if index == 0 {
 			kanban.columns[value.ID].Focus()
 		}
