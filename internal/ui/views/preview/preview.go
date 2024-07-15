@@ -22,10 +22,7 @@ type Model struct {
 
 func NewPreview(column *column.Model, selected task.Task) Model {
 	vp := viewport.New(0, 0)
-	vp.Style = lipgloss.NewStyle().
-		BorderStyle(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("130")).
-		PaddingRight(2)
+	vp.Style = lipgloss.NewStyle().PaddingRight(2)
 	markdown, _ := glamour.Render(selected.Content, "dark")
 	vp.SetContent(markdown)
 
@@ -40,8 +37,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.size = msg
-		m.viewport.Height = msg.Height
-		m.viewport.Width = msg.Width - m.column.Size.Width - 4
+		// TODO: Dehardcode this
+		m.viewport.Height = msg.Height - 6
+		m.viewport.Width = msg.Width - m.column.Size.Width - 5
 	case tea.KeyMsg:
 		switch (msg).Type {
 		case tea.KeyEnter:
@@ -71,7 +69,9 @@ func (m Model) View() string {
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.column.View(),
+		lipgloss.NewStyle().
+			PaddingLeft(1).
+			Render(m.column.View()),
 		taskStyle,
 	)
 }

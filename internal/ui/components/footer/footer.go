@@ -104,7 +104,7 @@ func (m Model) View() string {
 		Align(lipgloss.Right).
 		Padding(0, 1).
 		Height(Height).
-		Render(m.UpdatedAt)
+		Render("⟳  " + m.UpdatedAt)
 
 	fourthColumn := lipgloss.NewStyle().
 		Foreground(m.Styles.FourthColumnColors.Foreground).

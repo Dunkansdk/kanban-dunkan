@@ -133,7 +133,7 @@ func (kanban Kanban) View() string {
 			lipgloss.Center,
 			components...,
 		)
-		kanbanStyle := lipgloss.NewStyle().PaddingLeft(len(kanban.columns) + 1).Render(kanbanCmd)
+		kanbanStyle := lipgloss.NewStyle().PaddingLeft(1).Render(kanbanCmd)
 		return zone.Scan(kanbanStyle)
 	} else {
 		return "Loading\n"

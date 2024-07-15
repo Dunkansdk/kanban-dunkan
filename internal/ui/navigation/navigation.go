@@ -84,7 +84,7 @@ func (navigation NavigationStack) StackSummary() string {
 	for index, item := range navigation.stack {
 		breadcrumb.WriteString(item.Title)
 		if index != len(navigation.stack)-1 {
-			breadcrumb.WriteString(" -> ")
+			breadcrumb.WriteString(" ➤  ")
 		}
 	}
 	return breadcrumb.String()
