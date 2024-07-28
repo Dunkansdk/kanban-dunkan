@@ -5,9 +5,9 @@ import (
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -18,76 +18,146 @@ type Model struct {
 	Task task.Task
 
 	// Form
-	NameInput    textinput.Model
-	ContentInput textarea.Model
+	form *huh.Form
+	data *FormData
+}
+
+type FormData struct {
+	Title    string
+	Content  string
+	StatusId string
+}
+
+func CreateForm(model *Model) *huh.Form {
+	return huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Title:").
+				Value(&model.data.Title),
+
+			huh.NewText().
+				Value(&model.data.Content).
+				Title("Content").
+				Editor("vim").
+				Description("Give a small description"),
+
+			huh.NewSelect[string]().
+				Key("status").
+				Options(huh.NewOptions("To do", "In progress", "In requirements")...).
+				Title("Choose status").
+				Description("This will determine the status of the task"),
+
+			huh.NewConfirm().
+				Key("done").
+				Title("All done?").
+				Validate(func(v bool) error {
+					if !v {
+						return fmt.Errorf("Welp, finish up then")
+					}
+					return nil
+				}).
+				Affirmative("Yep").
+				Negative("Wait, no"),
+		),
+	).
+		WithWidth(100).
+		WithShowHelp(true).
+		WithShowErrors(true).
+		WithTheme(CustomStyles())
+}
+
+func CreateTaskForm() Model {
+	model := Model{}
+	model.form = CreateForm(&model)
+	return model
 }
 
 func EditTaskForm(task task.Task) Model {
-	return Model{
-		Task:         task,
-		NameInput:    createInput(task.Name, 50, true),
-		ContentInput: createArea(task.Content),
+	model := Model{
+		Task: task,
 	}
+
+	model.data = &FormData{Title: task.Name, Content: task.Content}
+	model.form = CreateForm(&model)
+
+	return model
 }
 
 func (m Model) Init() tea.Cmd {
-	return textinput.Blink
+	return m.form.Init()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Size = msg
-		m.ContentInput.SetWidth(msg.Width)
-		m.ContentInput.SetHeight(msg.Height - 10)
 
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
-			if m.NameInput.Focused() {
-				m.NameInput.Blur()
-				m.ContentInput.Focus()
-				m.ContentInput.SetCursor(0)
-				return m, textarea.Blink
-			}
+		switch msg.String() {
+		case "esc", "ctrl+c", "q":
+			return m, navigation.Pop()
 		}
 	}
 
-	if m.NameInput.Focused() {
-		m.NameInput, cmd = m.NameInput.Update(msg)
-	} else {
-		m.ContentInput, cmd = m.ContentInput.Update(msg)
+	var cmds []tea.Cmd
+
+	// Process the form
+	form, cmd := m.form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.form = f
+		cmds = append(cmds, cmd)
 	}
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
-	return fmt.Sprintf(
-		"%s\n%s\n%s",
-		m.NameInput.View(),
-		m.ContentInput.View(),
-		"(esc to quit)",
-	) + "\n"
+	return lipgloss.NewStyle().
+		Padding(1, 4, 0, 1).Render(m.form.View())
 }
 
-func createInput(placeholder string, charlimit int, focus bool) textinput.Model {
-	input := textinput.New()
-	input.Placeholder = placeholder
-	if focus {
-		input.Focus()
-	}
-	input.CharLimit = charlimit
-	return input
-}
+func CustomStyles() *huh.Theme {
+	t := huh.ThemeBase()
 
-func createArea(placeholder string) textarea.Model {
-	area := textarea.New()
-	area.Prompt = lipgloss.NewStyle().Foreground(lipgloss.Color("5")).PaddingLeft(2).Render("┃ ")
-	area.CharLimit = 0
-	area.SetWidth(30)
-	area.SetValue(placeholder)
-	return area
+	var (
+		background = lipgloss.AdaptiveColor{Dark: "235"}
+		selection  = lipgloss.AdaptiveColor{Dark: "166"}
+		foreground = lipgloss.AdaptiveColor{Dark: "223"}
+		comment    = lipgloss.AdaptiveColor{Dark: "245"}
+		green      = lipgloss.AdaptiveColor{Dark: "108"}
+		orange     = lipgloss.AdaptiveColor{Dark: "166"}
+		red        = lipgloss.AdaptiveColor{Dark: "124"}
+		yellow     = lipgloss.AdaptiveColor{Dark: "172"}
+	)
+
+	t.Focused.Base = t.Focused.Base.BorderForeground(selection)
+	t.Focused.Title = t.Focused.Title.Foreground(orange)
+	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(orange)
+	t.Focused.Description = t.Focused.Description.Foreground(comment)
+	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
+	t.Focused.Directory = t.Focused.Directory.Foreground(orange)
+	t.Focused.File = t.Focused.File.Foreground(foreground)
+	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
+	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(yellow)
+	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(yellow)
+	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(yellow)
+	t.Focused.Option = t.Focused.Option.Foreground(foreground)
+	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(yellow)
+	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
+	t.Focused.SelectedPrefix = t.Focused.SelectedPrefix.Foreground(green)
+	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(foreground)
+	t.Focused.UnselectedPrefix = t.Focused.UnselectedPrefix.Foreground(comment)
+	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(foreground).Background(orange).Bold(true)
+	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(foreground).Background(background)
+
+	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(yellow)
+	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(comment)
+	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(yellow)
+
+	t.Blurred = t.Focused
+	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	return t
 }

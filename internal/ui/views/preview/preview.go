@@ -44,7 +44,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch (msg).Type {
 		case tea.KeyEnter:
 			view := edit.EditTaskView(m.column.List.SelectedItem().(task.Task))
-			return view, navigation.Push(navigation.NavigationItem{Title: "Edit task", Model: view})
+			return m, navigation.Push(navigation.NavigationItem{Title: "Edit task", Model: view})
 		}
 	}
 

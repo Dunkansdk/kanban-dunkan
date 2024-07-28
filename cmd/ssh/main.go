@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Dunkansdk/kanban-dunkan/internal/database"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/kanban"
 	tea "github.com/charmbracelet/bubbletea"
@@ -45,7 +46,8 @@ func teaHandler(sess ssh.Session) (tea.Model, []tea.ProgramOption) {
 
 	lipgloss.SetColorProfile(termenv.TrueColor)
 	zone.NewGlobal()
-	model := kanban.NewKanban()
+	connectionHandler := database.CreateConnection(&database.PSQLDB{})
+	model := kanban.NewKanban(connectionHandler)
 	navigation := navigation.NewNavigation("Board", model)
 	return navigation, []tea.ProgramOption{
 		tea.WithMouseAllMotion(),

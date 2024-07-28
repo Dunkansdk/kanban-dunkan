@@ -19,33 +19,37 @@ type pTaskRepository struct {
 	connection *sql.DB
 }
 
-func NewTaskRepository() TaskRepository {
-	return &pTaskRepository{database.New()}
+type TaskConnection struct {
+	connection *database.ConnectionHandler
 }
 
-// InsertTask implements TaskRepository.
-func (tr *pTaskRepository) Insert(in *Task) error {
-	sqlStatement := `
-		INSERT INTO task (code, name, description, status, task_status_id)
-		VALUES ($1, $2, $3, $4)
-	`
-	_, err := tr.connection.Exec(sqlStatement, in.Code, in.Name, in.Description, in.Status)
-
-	return err
+func NewTaskRepository(handler *database.ConnectionHandler) TaskRepository {
+	return &TaskConnection{connection: handler}
 }
 
-// Get implements TaskRepository.
-func (tr *pTaskRepository) GetById(id int) (Task, error) {
+// Get implements TaskConnection.
+func (tc *TaskConnection) GetById(id int) (Task, error) {
 	var task Task
-	row := tr.connection.QueryRow("SELECT id, code, name, description FROM task WHERE id = $1", id)
+	row := tc.connection.Connection().QueryRow("SELECT id, code, name, description FROM task WHERE id = $1", id)
 	if err := row.Scan(&task.ID, &task.Code, &task.Name, &task.Content); err != nil {
 		return task, err
 	}
 	return task, nil
 }
 
-func (tr *pTaskRepository) GetAllStatuses() []TaskStatus {
-	rows, err := tr.connection.Query("SELECT id, name FROM task_status")
+// InsertTask implements TaskConnection.
+func (tc *TaskConnection) Insert(in *Task) error {
+	sqlStatement := `
+		INSERT INTO task (code, name, description, status, task_status_id)
+		VALUES ($1, $2, $3, 0)
+	`
+	_, err := tc.connection.Connection().Exec(sqlStatement, in.Code, in.Name, in.Content)
+
+	return err
+}
+
+func (tc *TaskConnection) GetAllStatuses() []TaskStatus {
+	rows, err := tc.connection.Connection().Query("SELECT id, name FROM task_status")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,9 +67,9 @@ func (tr *pTaskRepository) GetAllStatuses() []TaskStatus {
 	return status_list
 }
 
-func (tr *pTaskRepository) GetStatusById(id int) (TaskStatus, error) {
+func (tc *TaskConnection) GetStatusById(id int) (TaskStatus, error) {
 	var status TaskStatus
-	row := tr.connection.QueryRow("SELECT id, name FROM task_status WHERE id = $1", id)
+	row := tc.connection.Connection().QueryRow("SELECT id, name FROM task_status WHERE id = $1", id)
 	if err := row.Scan(&status.ID, &status.Name); err != nil {
 		return status, err
 	}
@@ -73,8 +77,8 @@ func (tr *pTaskRepository) GetStatusById(id int) (TaskStatus, error) {
 }
 
 // GetByStatus implements TaskRepository.
-func (tr *pTaskRepository) GetAllByStatus(status TaskStatus) ([]Task, error) {
-	rows, err := tr.connection.Query(`SELECT task.id, task.code, task.name, task.description, status.id, status.name 
+func (tc *TaskConnection) GetAllByStatus(status TaskStatus) ([]Task, error) {
+	rows, err := tc.connection.Connection().Query(`SELECT task.id, task.code, task.name, task.description, status.id, status.name 
 		FROM task AS task
 		JOIN task_status AS status ON status.id = task.task_status_id
 		WHERE task_status_id = $1`, status.ID)

@@ -8,6 +8,7 @@ import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/create"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/preview"
+	"github.com/Dunkansdk/kanban-dunkan/internal/database"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +18,7 @@ import (
 
 type Kanban struct {
 	components.Common
+	components.Interactive
 	loaded       bool
 	columns      []column.Model
 	quitting     bool
@@ -27,11 +29,12 @@ type Kanban struct {
 
 var activeId int
 
-func NewKanban() *Kanban {
+func NewKanban(conn *database.ConnectionHandler) *Kanban {
 	help := help.New()
 	help.ShowAll = false
 	kanban := Kanban{motion: true, help: help}
 	kanban.ID = zone.NewPrefix()
+	kanban.Connection = conn
 	return &kanban
 }
 

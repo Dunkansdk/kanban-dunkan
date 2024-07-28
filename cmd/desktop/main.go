@@ -6,6 +6,7 @@ import (
 	"github.com/BigJk/crt"
 
 	bubbleadapter "github.com/BigJk/crt/bubbletea"
+	"github.com/Dunkansdk/kanban-dunkan/internal/database"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/kanban"
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,7 +15,11 @@ import (
 
 func main() {
 	zone.NewGlobal()
-	model := kanban.NewKanban()
+
+	// Setting up connection handler
+	connectionHandler := database.CreateConnection(&database.PSQLDB{})
+	model := kanban.NewKanban(connectionHandler)
+
 	navigation := navigation.NewNavigation("Board", model)
 
 	// Load fonts for normal, bold and italic text styles.

@@ -16,7 +16,7 @@ func (kanban *Kanban) Active() (*column.Model, int) {
 }
 
 func (kanban *Kanban) RetreiveTasks() {
-	taskRepository := task.NewTaskRepository()
+	taskRepository := task.NewTaskRepository(kanban.Connection)
 	statuses := taskRepository.GetAllStatuses()
 
 	kanban.columns = make([]column.Model, len(statuses))
