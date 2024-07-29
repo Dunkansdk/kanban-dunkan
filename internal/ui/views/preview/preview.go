@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/edit"
@@ -14,6 +15,8 @@ import (
 )
 
 type Model struct {
+	components.Interactive
+
 	column   *column.Model
 	task     task.Task
 	size     tea.WindowSizeMsg
@@ -43,7 +46,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch (msg).Type {
 		case tea.KeyEnter:
-			view := edit.EditTaskView(m.column.List.SelectedItem().(task.Task))
+			view := edit.EditTaskView(m.Connection, m.column.List.SelectedItem().(task.Task))
 			return m, navigation.Push(navigation.NavigationItem{Title: "Edit task", Model: view})
 		}
 	}

@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/charmbracelet/log"
 	_ "github.com/mattn/go-sqlite3"
 	gap "github.com/muesli/go-app-paths"
 )
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS project (
 
 -- Crear la tabla task si no existe
 CREATE TABLE IF NOT EXISTS task (
-    id SERIAL PRIMARY KEY,
-    code VARCHAR(15) NOT NULL,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	code VARCHAR(15) NOT NULL, 
     name VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

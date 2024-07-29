@@ -1,14 +1,15 @@
 package kanban
 
 import (
+	"github.com/Dunkansdk/kanban-dunkan/internal/database"
 	"github.com/Dunkansdk/kanban-dunkan/internal/keyboard"
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/create"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/messages"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/views/preview"
-	"github.com/Dunkansdk/kanban-dunkan/internal/database"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -24,7 +25,6 @@ type Kanban struct {
 	quitting     bool
 	help         help.Model
 	activeColumn *column.Model
-	motion       bool
 }
 
 var activeId int
@@ -32,7 +32,7 @@ var activeId int
 func NewKanban(conn *database.ConnectionHandler) *Kanban {
 	help := help.New()
 	help.ShowAll = false
-	kanban := Kanban{motion: true, help: help}
+	kanban := Kanban{help: help}
 	kanban.ID = zone.NewPrefix()
 	kanban.Connection = conn
 	return &kanban
@@ -40,7 +40,7 @@ func NewKanban(conn *database.ConnectionHandler) *Kanban {
 
 func (kanban Kanban) Init() tea.Cmd {
 	if !kanban.loaded {
-		kanban.RetreiveTasks()
+		kanban.InitializeColumns()
 		kanban.loaded = true
 	}
 	return nil
@@ -53,16 +53,11 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch message := message.(type) {
 	case navigation.ModelRestoreMsg:
-		for index, value := range kanban.columns {
-			model, cmd := value.Update(message)
-			kanban.columns[index] = model.(column.Model)
-			cmds = append(cmds, cmd)
-		}
-		return kanban, tea.Batch(cmds...)
+		return kanban, kanban.RefreshColumns()
 
 	case tea.WindowSizeMsg:
 		if !kanban.loaded {
-			kanban.RetreiveTasks()
+			kanban.InitializeColumns()
 			kanban.loaded = true
 		}
 		kanban.UpdateSize(message)
@@ -83,34 +78,38 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 				kanban.Prev()
 			case key.Matches(message, keyboard.Options.Right):
 				kanban.Next()
+			case key.Matches(message, keyboard.Options.Refresh):
+				return kanban, kanban.RefreshColumns()
 			case key.Matches(message, keyboard.Options.Help):
 				kanban.help.ShowAll = !kanban.help.ShowAll
 			case key.Matches(message, keyboard.Options.Enter):
 				view := preview.NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task))
 				return kanban, navigation.Push(navigation.NavigationItem{Title: "Preview", Model: view})
 			case key.Matches(message, keyboard.Options.New):
-				view := create.CreateTaskView()
+				view := create.CreateTaskView(kanban.Connection)
 				return kanban, navigation.Push(navigation.NavigationItem{Title: "Create task", Model: view})
 			}
 		}
 
 	case tea.MouseMsg:
-		if kanban.motion {
-			switch message.Button {
-			case tea.MouseButtonWheelUp:
-				kanban.columns[activeId].List.CursorUp()
-				return kanban, nil
-			case tea.MouseButtonWheelDown:
-				kanban.columns[activeId].List.CursorDown()
-				return kanban, nil
-			}
-			if message.Action == tea.MouseActionPress || message.Button == tea.MouseButtonLeft {
-				kanban.ZoneSelectLine(message)
-			}
-			if message.Action == tea.MouseActionMotion && !kanban.activeColumn.List.SettingFilter() {
-				kanban.ZoneSelectColumn(message)
-			}
+		switch message.Button {
+		case tea.MouseButtonWheelUp:
+			kanban.columns[activeId].List.CursorUp()
+			return kanban, nil
+		case tea.MouseButtonWheelDown:
+			kanban.columns[activeId].List.CursorDown()
+			return kanban, nil
 		}
+		if message.Action == tea.MouseActionPress || message.Button == tea.MouseButtonLeft {
+			kanban.ZoneSelectLine(message)
+		}
+		if message.Action == tea.MouseActionMotion && !kanban.activeColumn.List.SettingFilter() {
+			kanban.ZoneSelectColumn(message)
+		}
+
+	case messages.CreateTaskMsg:
+		kanban.RefreshColumn(kanban.activeColumn, message.Task)
+		return kanban, nil
 	}
 
 	model, cmd := kanban.activeColumn.Update(message)

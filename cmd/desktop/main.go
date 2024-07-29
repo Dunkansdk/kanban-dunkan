@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/BigJk/crt"
@@ -29,7 +30,7 @@ func main() {
 	}
 
 	// Just pass your tea.Model to the bubbleadapter, and it will render it to the terminal.
-	win, _, err := bubbleadapter.Window(1000, 600, fonts, navigation, color.Black, tea.WithAltScreen(), tea.WithMouseAllMotion())
+	win, _, err := Window(1920, 1080, fonts, navigation, color.Black, tea.WithAltScreen(), tea.WithMouseAllMotion())
 	if err != nil {
 		panic(err)
 	}
@@ -38,4 +39,34 @@ func main() {
 	if err := win.Run("Kandun"); err != nil {
 		panic(err)
 	}
+}
+
+// Window creates a new crt based bubbletea window with the given width, height, fonts, model and default background color.
+// Additional options can be passed to the bubbletea program.
+func Window(width int, height int, fonts crt.Fonts, model tea.Model, defaultBg color.Color, options ...tea.ProgramOption) (*crt.Window, *tea.Program, error) {
+	gameInput := crt.NewConcurrentRW()
+	gameOutput := crt.NewConcurrentRW()
+
+	go gameInput.Run()
+	go gameOutput.Run()
+
+	prog := tea.NewProgram(
+		model,
+		append([]tea.ProgramOption{
+			tea.WithMouseAllMotion(),
+			tea.WithInput(gameInput),
+			tea.WithOutput(gameOutput),
+		}, options...)...,
+	)
+
+	go func() {
+		if _, err := prog.Run(); err != nil {
+			fmt.Printf("Alas, there's been an error: %v", err)
+		}
+
+		crt.SysKill()
+	}()
+
+	win, err := crt.NewGame(width, height, fonts, gameOutput, bubbleadapter.NewAdapter(prog), defaultBg)
+	return win, prog, err
 }

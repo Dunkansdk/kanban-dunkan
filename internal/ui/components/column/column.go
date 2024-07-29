@@ -20,7 +20,7 @@ type Model struct {
 	divisor int
 }
 
-func (column *Model) FillColumn(status task.TaskStatus, tasks []task.Task, totalColumns int) {
+func (column *Model) CreateColumns(status task.TaskStatus, tasks []task.Task, totalColumns int) {
 	column.ID = zone.NewPrefix()
 	column.divisor = totalColumns
 
@@ -41,6 +41,14 @@ func (column *Model) FillColumn(status task.TaskStatus, tasks []task.Task, total
 	column.List.KeyMap.PrevPage.SetEnabled(false)
 	column.List.KeyMap.GoToStart.SetEnabled(false)
 	column.List.KeyMap.GoToEnd.SetEnabled(false)
+}
+
+func (column *Model) Refresh(tasks []task.Task) {
+	var task_list []list.Item
+	for _, element := range tasks {
+		task_list = append(task_list, element)
+	}
+	column.List.SetItems(task_list)
 }
 
 func (column Model) Init() tea.Cmd {
@@ -83,6 +91,10 @@ func (column *Model) Focused() bool {
 
 func (column *Model) SetSize(width int, height int) {
 	column.Size.Width = (width / column.divisor) - CENTER_FACTOR
+}
+
+func (column *Model) SetItem(task list.Item) {
+	column.List.InsertItem(1, task)
 }
 
 func (column *Model) getStyle() lipgloss.Style {

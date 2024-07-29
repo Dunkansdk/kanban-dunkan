@@ -44,6 +44,10 @@ func (navigation NavigationStack) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return navigation, navigation.Push(msg.Item)
 	case ModelReplaceMsg:
 		return navigation, navigation.Replace(msg.Item)
+	case footer.RefreshLastUpdated:
+		model, command := navigation.footer.Update(msg)
+		navigation.footer = &model
+		return navigation, command
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":

@@ -5,7 +5,6 @@ import (
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
-	"github.com/Dunkansdk/kanban-dunkan/internal/ui/navigation"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -13,16 +12,18 @@ import (
 
 type Model struct {
 	components.Common
+	components.Interactive
 
 	// Edit Fields
 	Task task.Task
 
 	// Form
-	form *huh.Form
-	data *FormData
+	Form *huh.Form
+	Data *FormData
 }
 
 type FormData struct {
+	Code     string
 	Title    string
 	Content  string
 	StatusId string
@@ -33,10 +34,14 @@ func CreateForm(model *Model) *huh.Form {
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Title:").
-				Value(&model.data.Title),
+				Value(&model.Data.Title),
+
+			huh.NewInput().
+				Title("Code for testing, this should be auto generated:").
+				Value(&model.Data.Code),
 
 			huh.NewText().
-				Value(&model.data.Content).
+				Value(&model.Data.Content).
 				Title("Content").
 				Editor("vim").
 				Description("Give a small description"),
@@ -60,60 +65,39 @@ func CreateForm(model *Model) *huh.Form {
 				Negative("Wait, no"),
 		),
 	).
-		WithWidth(100).
+		WithWidth(200).
 		WithShowHelp(true).
 		WithShowErrors(true).
 		WithTheme(CustomStyles())
 }
 
 func CreateTaskForm() Model {
-	model := Model{}
-	model.form = CreateForm(&model)
+	model := Model{Data: &FormData{}}
+	model.Form = CreateForm(&model)
 	return model
 }
 
 func EditTaskForm(task task.Task) Model {
 	model := Model{
 		Task: task,
+		Data: &FormData{Title: task.Name, Content: task.Content},
 	}
 
-	model.data = &FormData{Title: task.Name, Content: task.Content}
-	model.form = CreateForm(&model)
+	model.Form = CreateForm(&model)
 
 	return model
 }
 
-func (m Model) Init() tea.Cmd {
-	return m.form.Init()
-}
-
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Size = msg
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "esc", "ctrl+c", "q":
-			return m, navigation.Pop()
-		}
 	}
-
-	var cmds []tea.Cmd
-
-	// Process the form
-	form, cmd := m.form.Update(msg)
-	if f, ok := form.(*huh.Form); ok {
-		m.form = f
-		cmds = append(cmds, cmd)
-	}
-
-	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
 	return lipgloss.NewStyle().
-		Padding(1, 4, 0, 1).Render(m.form.View())
+		Padding(1, 4, 0, 1).Render(m.Form.View())
 }
 
 func CustomStyles() *huh.Theme {

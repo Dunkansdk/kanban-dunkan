@@ -1,6 +1,7 @@
 package edit
 
 import (
+	"github.com/Dunkansdk/kanban-dunkan/internal/database"
 	"github.com/Dunkansdk/kanban-dunkan/internal/task"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/taskform"
@@ -9,6 +10,7 @@ import (
 
 type Model struct {
 	components.Common
+	components.Interactive
 
 	size tea.WindowSizeMsg
 	Task task.Task
@@ -17,15 +19,17 @@ type Model struct {
 	TaskForm taskform.Model
 }
 
-func EditTaskView(task task.Task) Model {
-	return Model{
+func EditTaskView(conn *database.ConnectionHandler, task task.Task) Model {
+	model := Model{
 		Task:     task,
 		TaskForm: taskform.EditTaskForm(task),
 	}
+	model.Connection = conn
+	return model
 }
 
 func (m Model) Init() tea.Cmd {
-	return m.TaskForm.Init()
+	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -34,7 +38,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Size = msg
 	}
 
-	return m.TaskForm.Update(msg)
+	return m, nil
 }
 
 func (m Model) View() string {

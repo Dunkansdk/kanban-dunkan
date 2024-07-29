@@ -1,10 +1,8 @@
 package task
 
 import (
-	"database/sql"
-	"log"
-
 	"github.com/Dunkansdk/kanban-dunkan/internal/database"
+	"github.com/charmbracelet/log"
 )
 
 type TaskRepository interface {
@@ -13,10 +11,6 @@ type TaskRepository interface {
 	GetAllByStatus(status TaskStatus) ([]Task, error)
 	GetAllStatuses() []TaskStatus
 	GetStatusById(id int) (TaskStatus, error)
-}
-
-type pTaskRepository struct {
-	connection *sql.DB
 }
 
 type TaskConnection struct {
@@ -38,13 +32,24 @@ func (tc *TaskConnection) GetById(id int) (Task, error) {
 }
 
 // InsertTask implements TaskConnection.
-func (tc *TaskConnection) Insert(in *Task) error {
+func (tc *TaskConnection) Insert(task *Task) error {
 	sqlStatement := `
-		INSERT INTO task (code, name, description, status, task_status_id)
-		VALUES ($1, $2, $3, 0)
+		INSERT INTO task (code, name, description, task_status_id, project_id)
+		VALUES ($1, $2, $3, 0, 0)
 	`
-	_, err := tc.connection.Connection().Exec(sqlStatement, in.Code, in.Name, in.Content)
+	log.Info("Creating task")
 
+	stmt, err := tc.connection.Connection().Prepare(sqlStatement)
+	if err != nil {
+		log.Fatalf("Error preparing statement: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(task.Code, task.Name, task.Content)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 	return err
 }
 

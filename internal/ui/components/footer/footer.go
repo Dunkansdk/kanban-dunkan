@@ -6,12 +6,15 @@ import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 	zone "github.com/lrstanley/bubblezone"
 	"github.com/muesli/reflow/truncate"
 )
 
 // Height represents the height of the statusbar.
 const Height = 1
+
+type RefreshLastUpdated struct{}
 
 type Model struct {
 	components.Common
@@ -82,6 +85,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.SetSize(msg.Width)
+	case RefreshLastUpdated:
+		log.Info("Refreshing footer")
+		m.UpdatedAt = time.Now().Format(time.RFC822)
+		log.Info(m.UpdatedAt)
+		return m, nil
 	}
 
 	return m, nil
