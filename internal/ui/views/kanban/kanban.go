@@ -83,8 +83,13 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(message, keyboard.Options.Help):
 				kanban.help.ShowAll = !kanban.help.ShowAll
 			case key.Matches(message, keyboard.Options.Enter):
-				view := preview.NewPreview(kanban.activeColumn, kanban.activeColumn.List.SelectedItem().(task.Task))
-				return kanban, navigation.Push(navigation.NavigationItem{Title: "Preview", Model: view})
+				preview := preview.NewPreview(kanban.activeColumn.List.SelectedItem().(task.Task))
+				cmds = append(cmds, navigation.TooltipCreate(navigation.Tooltip{
+					ID:      "ENEMY",
+					Content: preview.View(),
+					X:       30,
+					Y:       15,
+				}))
 			case key.Matches(message, keyboard.Options.New):
 				view := create.CreateTaskView(kanban.Connection)
 				return kanban, navigation.Push(navigation.NavigationItem{Title: "Create task", Model: view})
@@ -119,7 +124,8 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return model, cmd
 	}
 
-	return kanban, cmd
+	cmds = append(cmds, cmd)
+	return kanban, tea.Batch(cmds...)
 }
 
 func (kanban Kanban) View() string {

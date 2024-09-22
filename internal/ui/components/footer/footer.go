@@ -6,7 +6,6 @@ import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
 	zone "github.com/lrstanley/bubblezone"
 	"github.com/muesli/reflow/truncate"
 )
@@ -86,9 +85,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.SetSize(msg.Width)
 	case RefreshLastUpdated:
-		log.Info("Refreshing footer")
+		// log.Info("Refreshing footer")
 		m.UpdatedAt = time.Now().Format(time.RFC822)
-		log.Info(m.UpdatedAt)
+		// log.Info(m.UpdatedAt)
 		return m, nil
 	}
 

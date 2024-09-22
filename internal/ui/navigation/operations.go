@@ -52,3 +52,7 @@ func (navigation *NavigationStack) Pop() tea.Cmd {
 	navigation.footer.UpdateContent(navigation.Top().Title, navigation.StackSummary())
 	return tea.Batch(cmds...)
 }
+
+func (navigation *NavigationStack) Size() tea.WindowSizeMsg {
+	return *navigation.size
+}

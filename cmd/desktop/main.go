@@ -18,7 +18,7 @@ func main() {
 	zone.NewGlobal()
 
 	// Setting up connection handler
-	connectionHandler := database.CreateConnection(&database.PSQLDB{})
+	connectionHandler := database.CreateConnection(&database.SQLite3DB{})
 	model := kanban.NewKanban(connectionHandler)
 
 	navigation := navigation.NewNavigation("Board", model)
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// Just pass your tea.Model to the bubbleadapter, and it will render it to the terminal.
-	win, _, err := Window(1920, 1080, fonts, navigation, color.Black, tea.WithAltScreen(), tea.WithMouseAllMotion())
+	win, _, err := Window(1000, 600, fonts, navigation, color.Black, tea.WithAltScreen(), tea.WithMouseAllMotion())
 	if err != nil {
 		panic(err)
 	}

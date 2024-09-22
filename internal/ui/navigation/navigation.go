@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/footer"
+	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/overlay"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -14,6 +15,7 @@ type NavigationStack struct {
 	stack    []NavigationItem
 	size     *tea.WindowSizeMsg
 	footer   *footer.Model
+	tooltips map[string]Tooltip
 	viewport viewport.Model
 }
 
@@ -22,6 +24,7 @@ func NewNavigation(title string, model tea.Model) NavigationStack {
 		stack:    []NavigationItem{NavigationItem{Title: title, Model: model}},
 		footer:   footer.New("Preview"),
 		viewport: viewport.New(0, 0),
+		tooltips: map[string]Tooltip{},
 	}
 	return navigation
 }
@@ -38,6 +41,12 @@ func (navigation NavigationStack) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		navigation.footer.Size = msg
 		navigation.viewport.Height = msg.Height - footer.Height
 		navigation.viewport.Width = msg.Width
+	case TooltipMsg:
+		navigation.tooltips[msg.ID] = Tooltip(msg)
+	case TooltipDeleteMsg:
+		delete(navigation.tooltips, string(msg))
+	case TooltipClearMsg:
+		navigation.tooltips = map[string]Tooltip{}
 	case ModelPopMsg:
 		return navigation, navigation.Pop()
 	case ModelPushMsg:
@@ -51,7 +60,12 @@ func (navigation NavigationStack) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
-			return navigation, navigation.Pop()
+			if len(navigation.tooltips) != 0 {
+				navigation.tooltips = map[string]Tooltip{}
+				return navigation, nil
+			} else {
+				return navigation, navigation.Pop()
+			}
 		}
 	}
 
@@ -80,7 +94,13 @@ func (navigation NavigationStack) View() string {
 		return ""
 	}
 	navigation.viewport.SetContent(top.View())
-	return lipgloss.JoinVertical(lipgloss.Left, navigation.viewport.View(), navigation.footer.View())
+	view := lipgloss.JoinVertical(lipgloss.Left, navigation.viewport.View(), navigation.footer.View())
+
+	for _, v := range navigation.tooltips {
+		view = overlay.PlaceOverlay(v.X, v.Y, v.Content, view)
+	}
+
+	return view
 }
 
 func (navigation NavigationStack) StackSummary() string {

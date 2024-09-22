@@ -5,7 +5,6 @@ import (
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/column"
 	"github.com/Dunkansdk/kanban-dunkan/internal/ui/components/footer"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/log"
 )
 
 func (kanban *Kanban) Active() (*column.Model, int) {
@@ -46,7 +45,7 @@ func (kanban *Kanban) RefreshColumns() tea.Cmd {
 		tasks, _ := taskRepository.GetAllByStatus(value)
 		kanban.columns[value.ID].Refresh(tasks)
 	}
-	log.Info("Refreshing board")
+	// log.Info("Refreshing board")
 	return func() tea.Msg {
 		return footer.RefreshLastUpdated{}
 	}
