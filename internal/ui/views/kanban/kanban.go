@@ -87,8 +87,8 @@ func (kanban Kanban) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, navigation.TooltipCreate(navigation.Tooltip{
 					ID:      "ENEMY",
 					Content: preview.View(),
-					X:       30,
-					Y:       15,
+					X:       kanban.Size.Width / 2,
+					Y:       kanban.Size.Height / 2,
 				}))
 			case key.Matches(message, keyboard.Options.New):
 				view := create.CreateTaskView(kanban.Connection)
